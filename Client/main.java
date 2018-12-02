@@ -20,7 +20,7 @@ public class main extends Application{
     protected static FileWatcher fileWatch;
     public static void main(String[] args){
 
-        fileWatch = new FileWatcher("C:\\Users\\Admin\\Documents\\College Documents\\Generic Eclipse Workspace\\SocketsExample\\src\\Client\\FileFolder");
+        fileWatch = new FileWatcher("src\\Client\\Client_Folder_1");
 
         String serverName = "localhost";
 
@@ -31,6 +31,8 @@ public class main extends Application{
         Thread t = new Thread(threadClient);
 
         t.start();
+
+        threadClient.t = t;
 
         launch(args);
         

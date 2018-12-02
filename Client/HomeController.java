@@ -1,16 +1,24 @@
 package Client;
 
+import java.io.File;
+import java.io.IOException;
+
 import Client.Client_Objects.Client;
 import Client.Client_Objects.ClientThread;
 import Client.Folder.FileObservable;
-import Client.Folder.FileWatcherInterface;
+import Client.View.MediaViewController;
 import Server.Folder.FileWatcher;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
+import javafx.stage.Stage;
 
 public class HomeController{
 
@@ -70,8 +78,59 @@ public class HomeController{
 
     @FXML
     public void Download(ActionEvent e){
-        ClientThread.fileToReturn = lvServer.getSelectionModel().getSelectedItem();
-        ClientThread.switchVal = 2;
+        String s = lvServer.getSelectionModel().getSelectedItem();
+        Runnable r = () -> {
+            try{ ClientThread.clientThread.downloadFile(s); }
+            catch(IOException d) { d.printStackTrace(); }
+            catch(ClassNotFoundException d) { d.printStackTrace(); }
+        };
+
+        new Thread(r).start();
+    }
+
+    @FXML
+    public void PlayFile(ActionEvent e){
+        FileWatcher fileWatcherLocal = new FileWatcher(localDirectory);
+
+        /*FXMLLoader loader = new FXMLLoader(getClass().getResource("View\\MediaView.fxml"));
+
+        Parent root = null;
+
+        try {
+            root = (Parent) loader.load();
+
+        } catch (IOException ex) {
+            System.out.println("OOPS");
+            ex.printStackTrace();
+        }*/
+
+        FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(getClass().getResource("View\\MediaView.fxml"));
+
+        Parent root = null;
+
+        try { root = loader.load(); }
+        catch (IOException d) { d.printStackTrace(); }
+
+        MediaViewController returnObject = loader.getController();
+
+        String item = lvLocal.getSelectionModel().getSelectedItem();
+
+        File file = (((FileWatcher) fileWatcherLocal).ReturnFileReq(item));
+
+        System.out.println(file.getName());
+
+        if(returnObject == null){
+            System.out.println("NULL");
+        }
+
+        Stage primaryStage = (Stage) ((Node) e.getSource()).getScene().getWindow();
+
+        primaryStage.setScene(new Scene(root, 600, 400));
+        primaryStage.show();
+
+        returnObject.setFile(file);
+
 
     }
 

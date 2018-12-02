@@ -25,9 +25,8 @@ public class FileWatcher implements FileWatcherInterface{
         folder = new File(directoryAddress);
 
         if(folder.isDirectory() == false){
-            folder = null;
-
-            System.err.println("Address entered is not a valid directory");
+            System.err.println("Address does not exist, creating new folder");
+            folder.mkdir();
 
         }
 

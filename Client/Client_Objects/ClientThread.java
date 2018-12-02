@@ -45,6 +45,10 @@ public class ClientThread implements Runnable{
     
     public static String fileToReturn = null;
 
+    public static ClientThread clientThread;
+
+    public Thread t;
+
     public ClientThread(int port, String hostName, FileWatcher fileWatch, String[] args){
 
         this.port = port;
@@ -56,6 +60,9 @@ public class ClientThread implements Runnable{
         clientCounter++;
 
         clientNumber = clientCounter;
+
+        if(clientThread == null)
+            clientThread = this;
 
     }
 
@@ -82,12 +89,19 @@ public class ClientThread implements Runnable{
 
                 checkServer(switchVal);
                 switchVal = -1;
+
+                while(Thread.currentThread().isInterrupted()){
+
+                }
                 
             }
 
             //out.close();
 
             //client.close();
+
+            
+
 
         }
         catch (UnknownHostException e) { e.printStackTrace(); }
@@ -104,8 +118,12 @@ public class ClientThread implements Runnable{
 
         boolean result = inputStream.readBoolean();
 
+        if(switchVal == 2)
+            System.out.println("File send invoked");
+        
         if(result){
             switchVal = 3;
+            System.out.println(result);
         }
 
         switch(switchVal){
@@ -152,7 +170,7 @@ public class ClientThread implements Runnable{
 
     }
 
-    private String[] receiveListOfFileNames() throws IOException, ClassNotFoundException{
+    public String[] receiveListOfFileNames() throws IOException, ClassNotFoundException{
         String[] fileNames = (String[]) inputStream.readObject();
         serverContents = fileNames;
         System.out.println("Case 3");
@@ -172,6 +190,32 @@ public class ClientThread implements Runnable{
             });
         }
         return fileNames;
+    }
+
+    public void downloadFile(String fileToReturn) throws IOException, ClassNotFoundException{
+        
+        System.out.println(fileToReturn);
+
+        if(t.isInterrupted() == false){
+            t.interrupt();
+        }
+        
+        out.writeInt(2);
+        out.flush();
+
+        boolean result = inputStream.readBoolean();
+
+        if(result){
+            receiveListOfFileNames();
+            downloadFile(fileToReturn);
+        }
+        
+        else{
+            receiveOneFile(fileToReturn);
+            t.interrupted();
+        }
+
+        
     }
 
 }
